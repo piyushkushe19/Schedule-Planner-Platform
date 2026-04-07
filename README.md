@@ -1,10 +1,70 @@
-# Schedulr — Full-Stack Scheduling Platform
+# 🚀 Schedulr — Intelligent Meeting Scheduling Platform
 
-A production-ready Calendly-style meeting scheduler built with React, Node.js, MongoDB, Google Calendar API, and OpenAI.
+Schedulr is a **full-stack, production-ready scheduling platform** inspired by tools like Calendly, designed to simplify meeting coordination with **real-time availability, Google Calendar integration, and AI-powered enhancements**.
 
 ---
 
-## 🏗️ Architecture
+## ✨ Features
+
+### 🔐 Authentication & User Management
+- JWT-based authentication (secure & stateless)
+- User profiles with timezone support
+- Public booking pages (`/book/:username`)
+
+### 📅 Scheduling System
+- Custom weekly availability
+- Dynamic slot generation (no pre-storage)
+- Buffer time between meetings
+- Prevents double bookings (DB-level checks)
+
+### 🔗 Booking Flow
+- Shareable booking link
+- Guest booking without account
+- Email-based identification
+- UUID-based cancellation (no login required)
+
+### 📆 Google Calendar Integration
+- OAuth2 authentication
+- Automatic event creation
+- Guest invitations via email
+- Sync with real-time availability
+
+### 🤖 AI Enhancements (Optional)
+Powered by OpenAI:
+- Smart time slot recommendations
+- AI-generated meeting descriptions
+
+### 🛡️ Security
+- Password hashing using bcrypt
+- API rate limiting
+- Input validation with Joi
+- Secure token handling (server-side)
+
+---
+
+## 🏗️ Tech Stack
+
+### Frontend
+- React (Vite)
+- Tailwind CSS
+- React Router DOM
+- Axios
+
+### Backend
+- Node.js + Express
+- MongoDB (Mongoose)
+- JWT Authentication
+- Google Calendar API
+
+### Dev Tools & APIs
+- OpenAI API (optional)
+- date-fns-tz
+- Nodemon
+
+---
+
+## 🧠 Architecture Overview
+
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -21,93 +81,6 @@ A production-ready Calendly-style meeting scheduler built with React, Node.js, M
       │               │                    │
    MongoDB       Google Calendar        OpenAI API
    (Mongoose)    OAuth2 + Events        (GPT-3.5)
-```
-
-### Request Flow
-1. User registers → JWT issued → stored in localStorage
-2. User sets availability → saved to MongoDB
-3. User shares `/book/:username` link
-4. Guest visits link → slots computed from availability − busy times
-5. Guest selects slot → booking created in MongoDB
-6. If Google Calendar connected → event created, guest invited via email
-7. AI optionally suggests best slots (OpenAI) and generates meeting descriptions
-
----
-
-## 📁 Project Structure
-
-```
-schedulr/
-├── backend/
-│   ├── config/
-│   │   ├── database.js          # MongoDB connection
-│   │   └── google.js            # Google OAuth2 client factory
-│   ├── controllers/
-│   │   ├── authController.js    # Register, login, me
-│   │   ├── userController.js    # Profile update, public profile, stats
-│   │   ├── availabilityController.js
-│   │   ├── bookingController.js # Slot generation, booking, cancel
-│   │   ├── calendarController.js# Google OAuth2 flow
-│   │   └── aiController.js      # OpenAI description + suggestions
-│   ├── middleware/
-│   │   ├── auth.js              # JWT validation
-│   │   └── validate.js          # Joi schemas + validate()
-│   ├── models/
-│   │   ├── User.js
-│   │   ├── Availability.js
-│   │   └── Booking.js
-│   ├── routes/
-│   │   ├── auth.js
-│   │   ├── users.js
-│   │   ├── availability.js
-│   │   ├── bookings.js
-│   │   ├── calendar.js
-│   │   └── ai.js
-│   ├── server.js
-│   ├── package.json
-│   └── .env.example
-│
-└── frontend/
-    ├── src/
-    │   ├── components/
-    │   │   ├── common/
-    │   │   │   ├── Alert.jsx
-    │   │   │   ├── CopyButton.jsx
-    │   │   │   ├── EmptyState.jsx
-    │   │   │   ├── Modal.jsx
-    │   │   │   ├── ProtectedRoute.jsx
-    │   │   │   └── Spinner.jsx
-    │   │   └── layout/
-    │   │       └── DashboardLayout.jsx
-    │   ├── hooks/
-    │   │   └── useAuth.jsx         # Auth context + provider
-    │   ├── pages/
-    │   │   ├── LandingPage.jsx
-    │   │   ├── LoginPage.jsx
-    │   │   ├── RegisterPage.jsx
-    │   │   ├── Dashboard.jsx
-    │   │   ├── AvailabilityPage.jsx
-    │   │   ├── BookingsPage.jsx
-    │   │   ├── ProfilePage.jsx
-    │   │   ├── BookingPage.jsx      # Public — /book/:username
-    │   │   ├── BookingConfirmPage.jsx
-    │   │   └── NotFoundPage.jsx
-    │   ├── services/
-    │   │   ├── api.js               # Axios instance + interceptors
-    │   │   ├── bookingService.js
-    │   │   └── availabilityService.js
-    │   ├── utils/
-    │   │   ├── timezone.js          # date-fns-tz helpers + TIMEZONES list
-    │   │   └── helpers.js
-    │   ├── App.jsx
-    │   ├── main.jsx
-    │   └── index.css                # Tailwind + component classes
-    ├── index.html
-    ├── vite.config.js
-    ├── tailwind.config.js
-    ├── postcss.config.js
-    ├── vercel.json
-    └── .env.example
 ```
 
 ---
@@ -256,64 +229,6 @@ cancelToken (UUID for guest self-cancel)
 
 ---
 
-## 🚀 Deployment
-
-### Backend → Render.com
-
-1. Push code to GitHub
-2. Create new **Web Service** on Render
-3. Connect your repo
-4. Settings:
-   - **Build command**: `cd backend && npm install`
-   - **Start command**: `cd backend && node server.js`
-5. Add all environment variables from `.env`
-6. Update `GOOGLE_REDIRECT_URI` to: `https://your-service.onrender.com/api/calendar/callback`
-
-### Frontend → Vercel
-
-1. Push code to GitHub
-2. Import project in Vercel
-3. Set **Root Directory**: `frontend`
-4. Add environment variable:
-   - `VITE_API_URL` = `https://your-backend.onrender.com/api`
-5. Edit `vercel.json` — replace `YOUR-BACKEND-URL` with your Render URL
-6. Deploy
-
-### Post-deployment checklist
-- [ ] Update `FRONTEND_URL` in backend env to your Vercel URL
-- [ ] Update `GOOGLE_REDIRECT_URI` to production backend URL
-- [ ] Add production redirect URI in Google Cloud Console
-- [ ] Test the full booking flow end-to-end
-- [ ] Verify Google Calendar sync works
-- [ ] Check AI suggestions load (or confirm they fail gracefully)
-
----
-
-## 📡 API Reference
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| POST | /api/auth/register | — | Create account |
-| POST | /api/auth/login | — | Login, get JWT |
-| GET | /api/auth/me | ✓ | Get current user |
-| PUT | /api/users/profile | ✓ | Update profile |
-| GET | /api/users/stats | ✓ | Dashboard stats |
-| GET | /api/users/:username | — | Public profile |
-| GET | /api/availability/me | ✓ | Get my availability |
-| PUT | /api/availability/me | ✓ | Update availability |
-| GET | /api/availability/public/:username | — | Public availability |
-| GET | /api/bookings/slots/:username | — | Available slots for date |
-| POST | /api/bookings/book/:username | — | Create booking |
-| GET | /api/bookings/mine | ✓ | My bookings |
-| PATCH | /api/bookings/:id/cancel | — | Cancel booking |
-| GET | /api/calendar/auth-url | ✓ | Start Google OAuth |
-| GET | /api/calendar/callback | ✓ | OAuth callback |
-| DELETE | /api/calendar/disconnect | ✓ | Disconnect Google |
-| GET | /api/calendar/events | ✓ | Upcoming calendar events |
-| POST | /api/ai/suggest-times | — | AI slot suggestions |
-| POST | /api/ai/generate-description | — | AI meeting description |
-
----
 
 ## 🧪 Testing the Booking Flow
 
@@ -327,36 +242,3 @@ cancelToken (UUID for guest self-cancel)
 8. If Google Calendar connected, check your Google Calendar
 
 ---
-
-## 🔧 Troubleshooting
-
-**"Cannot connect to MongoDB"**
-→ Check `MONGODB_URI` format; ensure IP `0.0.0.0/0` is whitelisted in Atlas Network Access
-
-**"Google OAuth redirect_uri_mismatch"**
-→ The redirect URI in `.env` must exactly match what's in Google Cloud Console
-
-**"No available slots"**
-→ Check that availability days are toggled ON and time ranges are valid (start < end)
-
-**AI suggestions not showing**
-→ Expected if `OPENAI_API_KEY` is not set — the UI silently hides the AI section
-
-**JWT errors after deployment**
-→ Ensure `JWT_SECRET` is set in the hosting environment (not just local `.env`)
-
----
-
-## 🤝 Assumptions & Decisions
-
-| Decision | Rationale |
-|---|---|
-| Slots computed on-demand | Avoids pre-generating millions of slots in DB |
-| JWT in localStorage | Simpler SPA integration; use httpOnly cookies for higher security |
-| `cancelToken` UUID | Guests can cancel without needing an account |
-| Bulk write for availability | Atomic upsert for all 7 days in one DB call |
-| AI degrades gracefully | Platform is fully functional without OpenAI key |
-| `date-fns-tz` for formatting | Reliable IANA timezone support, smaller bundle than moment |
-| Google tokens stored server-side | Never exposed to the browser |
-| Buffer time applied to slot generation | Prevents back-to-back meetings at generation time |
-| Conflict check before booking | Last-mile guard against race conditions |
